@@ -1,0 +1,80 @@
+#include <p24fj128ga010.h>
+
+//Konfiguracja dla Explorer 16 z progr. icd2
+_CONFIG1(JTAGEN_OFF & GCP_OFF & GWRP_OFF & BKBUG_OFF & COE_OFF & FWDTEN_OFF)
+_CONFIG2(FCKSM_CSDCMD & OSCIOFNC_ON & POSCMOD_HS & FNOSC_PRI)
+
+#define SCALE 308L
+
+int gray_encode(int n){
+	return n^(n>>1);
+}
+
+int main(void){
+unsigned long i;
+unsigned char display=0;
+int grade = 0;
+int gray=0;
+//inicjalizacja
+ PORTA=0x0000;
+ TRISA=0xFF00;
+ TRISD=0xFFFF;
+ 
+//niekoĹ?czÄ?ca siÄ? pÄ?tla 
+again:
+
+	Nop();
+	PORTA=(unsigned int) display;
+
+	switch (grade) {
+
+	case 0:
+		while(1){
+		PORTA=(unsigned int) display;
+		for(i=500L*SCALE;i>0;i--) Nop();
+		if (PORTDbits.RD13 == 0){
+			grade=grade+1;
+			break;
+		}
+	   	display=display+1;
+		}
+
+	case 1:
+		while(1){
+		PORTA=(unsigned int) display;
+		for(i=500L*SCALE;i>0;i--) Nop();
+		if (PORTDbits.RD13 == 0){
+			grade=grade+1;
+			break;
+		}
+	   	display=display-1;
+		}
+
+	case 2:
+		gray = 0;
+		while(1){
+		PORTA=(unsigned int) display;
+		for(i=500L*SCALE;i>0;i--) Nop();
+		if (PORTDbits.RD13 == 0){
+			grade=grade+1;
+			break;
+		}	
+	   	display = gray_encode(gray);
+		gray = gray + 1;
+		}
+
+	case 3:
+		gray = 255;
+		while(1){
+		PORTA=(unsigned int) display;
+		for(i=500L*SCALE;i>0;i--) Nop();
+		if (PORTDbits.RD13 == 0){
+			grade=grade+1;
+			break;
+		}	
+	   	display = gray_encode(gray);
+		gray = gray - 1;
+		}
+}
+	goto again;	
+}
